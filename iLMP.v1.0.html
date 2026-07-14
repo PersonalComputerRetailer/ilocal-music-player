@@ -341,6 +341,15 @@
   .queue li.active { background: linear-gradient(90deg, rgba(245,180,82,0.12), transparent); }
   .queue li.active .idx { color: var(--amber); }
   .queue li.active .name { color: var(--amber); font-weight: 600; }
+  .queue li.dragging { opacity: 0.4; }
+  .queue li.drop-above { box-shadow: inset 0 2px 0 var(--amber); }
+  .queue li.drop-below { box-shadow: inset 0 -2px 0 var(--amber); }
+  .grip {
+  flex: none; color: var(--muted); cursor: grab;
+  font-size: 13px; line-height: 1; opacity: 0.5; user-select: none;
+  }
+  .queue li:hover .grip { opacity: 1; }
+  .queue li.dragging .grip { cursor: grabbing; }
 
   .idx {
     width: 22px;
@@ -520,14 +529,27 @@
     if (current === -1 && tracks.length) { load(0, false); }
   }
 
+let dragFrom = -1;
+
+function moveTrack(from, to) {
+  if (from === to || from < 0) return;
+  const playing = current > -1 ? tracks[current] : null;   // remember the playing track
+  const [moved] = tracks.splice(from, 1);
+  tracks.splice(to, 0, moved);
+  current = playing ? tracks.indexOf(playing) : -1;         // re-find it after the move
+  render();
+}
+
   function render() {
     countEl.textContent = '(' + tracks.length + ')';
     emptyState.style.display = tracks.length ? 'none' : '';
     queueEl.innerHTML = '';
     tracks.forEach((t, i) => {
       const li = document.createElement('li');
-      if (i === current) li.className = 'active';
+      li.className = (i === current ? 'active' : '');
+      li.draggable = true;
       li.innerHTML =
+        '<span class="grip" title="Drag to reorder" aria-hidden="true">\u283f</span>' +
         '<span class="idx mono">' + (i + 1) + '</span>' +
         '<div class="meta"><div class="name"></div></div>' +
         '<span class="dur mono">' + (t.dur != null ? fmt(t.dur) : '—:—') + '</span>' +
@@ -537,6 +559,36 @@
       li.querySelector('.remove').addEventListener('click', (e) => {
         e.stopPropagation();
         removeTrack(i);
+      });
+      li.addEventListener('dragstart', (e) => {
+        dragFrom = i;
+        li.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', String(i));
+      });
+      li.addEventListener('dragend', () => {
+        li.classList.remove('dragging');
+        queueEl.querySelectorAll('li').forEach(el => el.classList.remove('drop-above', 'drop-below'));
+      });
+      li.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        const rect = li.getBoundingClientRect();
+        const below = (e.clientY - rect.top) > rect.height / 2;
+        li.classList.toggle('drop-below', below);
+        li.classList.toggle('drop-above', !below);
+      });
+      li.addEventListener('dragleave', () => {
+        li.classList.remove('drop-above', 'drop-below');
+      });
+      li.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const rect = li.getBoundingClientRect();
+        const below = (e.clientY - rect.top) > rect.height / 2;
+        let to = i + (below ? 1 : 0);
+        if (dragFrom < to) to--;   // account for the row that's about to be removed
+        moveTrack(dragFrom, to);
+        dragFrom = -1;
       });
       queueEl.appendChild(li);
     });
