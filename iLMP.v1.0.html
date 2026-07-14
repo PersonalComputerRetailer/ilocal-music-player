@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nightdeck — Local Music Player</title>
+<style>
+  /* ---- Nightdeck (default) ---- */
+  :root, [data-skin="nightdeck"] {
+    --bg: #0d0a1a; --bg-glow: #1a1436;
+    --panel: #17132b; --panel-2: #1f1a38; --line: #2c2648;
+    --text: #ece7f7; --muted: #8a83a8;
+    --amber: #f5b452; --amber-dim: #a9772f; --glow: rgba(245,180,82,0.35);
+    --ink: #201607; --radius: 14px;
+  }
+  /* ---- Vaporwave ---- */
+  [data-skin="vaporwave"] {
+    --bg: #1a0b2e; --bg-glow: #3b1d6b;
+    --panel: #24123f; --panel-2: #2d1650; --line: #3d2168;
+    --text: #f5e9ff; --muted: #a98fd0;
+    --amber: #ff5fd2; --amber-dim: #a83a8a; --glow: rgba(255,95,210,0.40);
+    --ink: #2a0930; --radius: 14px;
+  }
+  /* ---- Terminal ---- */
+  [data-skin="terminal"] {
+    --bg: #050a05; --bg-glow: #0a2a0f;
+    --panel: #0a140a; --panel-2: #0f1e0f; --line: #1c3a1c;
+    --text: #b8ffb8; --muted: #4f8f4f;
+    --amber: #39ff5c; --amber-dim: #1f8f37; --glow: rgba(57,255,92,0.40);
+    --ink: #04240b; --radius: 3px;
+  }
+  /* ---- Paper (light) ---- */
+  [data-skin="paper"] {
+    --bg: #efe9dd; --bg-glow: #f8f2e6;
+    --panel: #ffffff; --panel-2: #f6f1e7; --line: #ddd3c2;
+    --text: #2b2620; --muted: #8a7f6d;
+    --amber: #c65a2e; --amber-dim: #e0a583; --glow: rgba(198,90,46,0.25);
+    --ink: #fff2ea; --radius: 12px;
+  }
+  /* ---- Ocean ---- */
+  [data-skin="ocean"] {
+    --bg: #071a24; --bg-glow: #0f3d52;
+    --panel: #0c2836; --panel-2: #103545; --line: #1c4d61;
+    --text: #e0f4fb; --muted: #6fa3b5;
+    --amber: #34d3e0; --amber-dim: #1f8b96; --glow: rgba(52,211,224,0.35);
+    --ink: #04222a; --radius: 14px;
+  }
+  /* ---- Sunset ---- */
+  [data-skin="sunset"] {
+    --bg: #2a0f1e; --bg-glow: #5c2340;
+    --panel: #3d182b; --panel-2: #4d1f38; --line: #632a4a;
+    --text: #ffe9f0; --muted: #c78fa8;
+    --amber: #ff7a4d; --amber-dim: #b0512e; --glow: rgba(255,122,77,0.40);
+    --ink: #360f18; --radius: 16px;
+  }
+  /* ---- Monochrome ---- */
+  [data-skin="mono"] {
+    --bg: #101010; --bg-glow: #262626;
+    --panel: #1a1a1a; --panel-2: #222222; --line: #333333;
+    --text: #f0f0f0; --muted: #888888;
+    --amber: #ffffff; --amber-dim: #666666; --glow: rgba(255,255,255,0.22);
+    --ink: #111111; --radius: 2px;
+  }
+  /* ---- Bubblegum (light) ---- */
+  [data-skin="bubblegum"] {
+    --bg: #ffe4f0; --bg-glow: #ffd0e6;
+    --panel: #ffffff; --panel-2: #fff0f7; --line: #ffc9e0;
+    --text: #5a2740; --muted: #b57a97;
+    --amber: #ff4d94; --amber-dim: #ffa9cd; --glow: rgba(255,77,148,0.30);
+    --ink: #ffffff; --radius: 20px;
+  }
+  /* ---- Crimson ---- */
+  [data-skin="crimson"] {
+    --bg: #16090a; --bg-glow: #401512;
+    --panel: #24100f; --panel-2: #301513; --line: #4a201d;
+    --text: #ffe6e2; --muted: #b58680;
+    --amber: #ff4438; --amber-dim: #a02b23; --glow: rgba(255,68,56,0.40);
+    --ink: #2a0806; --radius: 10px;
+  }
+  /* ---- Forest ---- */
+  [data-skin="forest"] {
+    --bg: #0a1a10; --bg-glow: #123d22;
+    --panel: #0f2818; --panel-2: #143320; --line: #1f4a30;
+    --text: #e2f5e6; --muted: #7aa88a;
+    --amber: #7dd957; --amber-dim: #4a8f33; --glow: rgba(125,217,87,0.35);
+    --ink: #0a2410; --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 70% -10%, var(--bg-glow) 0%, transparent 60%),
+      var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    transition: background 0.4s ease, color 0.4s ease;
+  }
+
+  .mono { font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace; }
+
+  .deck {
+    width: 100%;
+    max-width: 560px;
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04);
+    overflow: hidden;
+    transition: background 0.4s ease, border-color 0.4s ease, border-radius 0.4s ease;
+  }
+
+  /* Header / readout */
+  header {
+    padding: 20px 22px 18px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .eq {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 34px;
+    width: 34px;
+    flex: none;
+  }
+  .eq span {
+    flex: 1;
+    background: var(--amber-dim);
+    border-radius: 2px;
+    height: 20%;
+  }
+  .deck.playing .eq span {
+    background: var(--amber);
+    box-shadow: 0 0 8px var(--glow);
+    animation: bounce 0.9s ease-in-out infinite;
+  }
+  .deck.playing .eq span:nth-child(2) { animation-delay: 0.15s; }
+  .deck.playing .eq span:nth-child(3) { animation-delay: 0.3s; }
+  .deck.playing .eq span:nth-child(4) { animation-delay: 0.45s; }
+  @keyframes bounce {
+    0%, 100% { height: 25%; }
+    50% { height: 100%; }
+  }
+
+  .readout { min-width: 0; flex: 1; }
+  .readout .eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 4px;
+  }
+  .readout .title {
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text);
+  }
+  .readout .title.empty { color: var(--muted); font-weight: 500; }
+
+  .palette-btn {
+    flex: none;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--amber);
+    cursor: pointer;
+    display: grid; place-items: center;
+    transition: transform 0.08s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+  .palette-btn:hover { border-color: var(--amber-dim); background: var(--panel-2); }
+  .palette-btn:active { transform: scale(0.94); }
+  .palette-btn svg { width: 20px; height: 20px; fill: currentColor; }
+
+  .skins-tray {
+    display: none;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(0,0,0,0.15);
+  }
+  .skins-tray.open { display: grid; }
+
+  .swatch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 6px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    transition: transform 0.1s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+  .swatch:hover { transform: translateY(-2px); }
+  .swatch.active { border-color: currentColor; box-shadow: 0 0 0 2px currentColor inset; }
+  .swatch .dot {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.35);
+  }
+  .swatch .sw-name { opacity: 0.9; }
+
+  @media (max-width: 480px) {
+    .skins-tray { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  /* Progress */
+  .progress-wrap { padding: 16px 22px 6px; }
+  .times {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 8px;
+    letter-spacing: 0.04em;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 6px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    cursor: pointer;
+    outline-offset: 3px;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 15px; width: 15px;
+    border-radius: 50%;
+    background: var(--amber);
+    box-shadow: 0 0 10px var(--glow);
+    border: none;
+  }
+  input[type="range"]::-moz-range-thumb {
+    height: 15px; width: 15px;
+    border-radius: 50%;
+    background: var(--amber);
+    border: none;
+    box-shadow: 0 0 10px var(--glow);
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 8px 22px 18px;
+  }
+  button.ctl {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--text);
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: transform 0.08s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+  button.ctl:hover { border-color: var(--amber-dim); background: var(--panel-2); }
+  button.ctl:active { transform: scale(0.94); }
+  button.ctl svg { width: 18px; height: 18px; fill: currentColor; }
+
+  button.ctl.play {
+    width: 58px; height: 58px;
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--ink);
+    box-shadow: 0 0 24px -4px var(--glow);
+  }
+  button.ctl.play:hover { background: #ffc470; }
+  button.ctl.toggle.on { color: var(--amber); border-color: var(--amber-dim); }
+
+  .spacer { flex: 1; }
+
+  .vol {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--muted);
+    width: 120px;
+  }
+  .vol svg { width: 16px; height: 16px; fill: currentColor; flex: none; }
+
+  /* Queue */
+  .queue-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 22px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: rgba(0,0,0,0.15);
+  }
+  .queue-head .label {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .queue-head .count { color: var(--amber); }
+  .textbtn {
+    background: none; border: none; color: var(--muted);
+    font-size: 12px; cursor: pointer; padding: 4px 6px;
+    border-radius: 6px; letter-spacing: 0.03em;
+  }
+  .textbtn:hover { color: var(--text); background: var(--panel); }
+
+  .queue {
+    list-style: none;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .queue li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 22px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(44,38,72,0.5);
+    transition: background 0.12s ease;
+  }
+  .queue li:hover { background: var(--panel); }
+  .queue li.active { background: linear-gradient(90deg, rgba(245,180,82,0.12), transparent); }
+  .queue li.active .idx { color: var(--amber); }
+  .queue li.active .name { color: var(--amber); font-weight: 600; }
+
+  .idx {
+    width: 22px;
+    font-size: 12px;
+    color: var(--muted);
+    flex: none;
+    text-align: right;
+  }
+  .meta { min-width: 0; flex: 1; }
+  .name {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dur { font-size: 12px; color: var(--muted); flex: none; }
+  .remove {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 16px; line-height: 1;
+    padding: 2px 6px; border-radius: 6px; flex: none;
+    opacity: 0; transition: opacity 0.12s ease, color 0.12s ease;
+  }
+  .queue li:hover .remove { opacity: 1; }
+  .remove:hover { color: #ff8a8a; }
+
+  /* Empty / dropzone */
+  .empty-state {
+    padding: 40px 22px;
+    text-align: center;
+    color: var(--muted);
+  }
+  .empty-state strong { color: var(--text); display: block; margin-bottom: 6px; font-size: 15px; }
+  .empty-state span { font-size: 13px; }
+
+  .add-row { padding: 16px 22px 22px; }
+  label.addbtn {
+    display: block;
+    text-align: center;
+    padding: 13px;
+    border: 1px dashed var(--amber-dim);
+    border-radius: 10px;
+    color: var(--amber);
+    cursor: pointer;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  label.addbtn:hover { background: rgba(245,180,82,0.08); border-color: var(--amber); }
+  input[type="file"] { display: none; }
+
+  .deck.dragover { outline: 2px solid var(--amber); outline-offset: -2px; }
+
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 10px; border: 2px solid var(--panel); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .deck.playing .eq span { animation: none; height: 60%; }
+    button.ctl { transition: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="deck" id="deck">
+    <header>
+      <div class="eq" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <div class="readout">
+        <div class="eyebrow">Now playing</div>
+        <div class="title empty" id="nowPlaying">Nothing queued yet</div>
+      </div>
+      <button class="palette-btn" id="paletteBtn" title="Change skin" aria-label="Change skin" aria-expanded="false">
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 000 20c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.2 0-1 .8-1.5 1.5-1.5H16a5 5 0 005-5c0-4.7-4-9-9-9zm-5.5 9a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm3-4a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm5 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm3 4a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/></svg>
+      </button>
+    </header>
+
+    <div class="skins-tray" id="skinsTray" role="listbox" aria-label="Skins"></div>
+
+    <div class="progress-wrap">
+      <input type="range" id="seek" min="0" max="1000" value="0" step="1" aria-label="Seek">
+      <div class="times mono">
+        <span id="curTime">0:00</span>
+        <span id="durTime">0:00</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="ctl toggle" id="shuffleBtn" title="Shuffle" aria-label="Shuffle">
+        <svg viewBox="0 0 24 24"><path d="M17 3l4 4-4 4V8h-2.5l-2.8 3.5 2.8 3.5H17v-3l4 4-4 4v-3h-3.5l-3.2-4-3.2 4H3v-2h3.1l3.6-4.5L6.1 8H3V6h4.3l3.2 4 2.5-3.1H17V3z"/></svg>
+      </button>
+      <button class="ctl" id="prevBtn" title="Previous" aria-label="Previous track">
+        <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+      </button>
+      <button class="ctl play" id="playBtn" title="Play" aria-label="Play">
+        <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button class="ctl" id="nextBtn" title="Next" aria-label="Next track">
+        <svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></svg>
+      </button>
+      <button class="ctl toggle" id="repeatBtn" title="Repeat" aria-label="Repeat">
+        <svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+      </button>
+      <div class="spacer"></div>
+      <div class="vol">
+        <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 00-2.5-4v8a4.5 4.5 0 002.5-4z"/></svg>
+        <input type="range" id="vol" min="0" max="1" step="0.01" value="1" aria-label="Volume">
+      </div>
+    </div>
+
+    <div class="queue-head">
+      <div class="label">Queue <span class="count" id="count">(0)</span></div>
+      <button class="textbtn" id="clearBtn">Clear all</button>
+    </div>
+
+    <ul class="queue" id="queue"></ul>
+
+    <div class="empty-state" id="emptyState">
+      <strong>Drop your music here</strong>
+      <span>MP4, M4A, MP3, and more — files stay on your device</span>
+    </div>
+
+    <div class="add-row">
+      <label class="addbtn" for="fileInput">+ Add music files</label>
+      <input type="file" id="fileInput" accept="audio/*,.mp4,.m4a" multiple>
+    </div>
+  </div>
+
+  <audio id="audio"></audio>
+
+<script>
+(function () {
+  const audio = document.getElementById('audio');
+  const deck = document.getElementById('deck');
+  const queueEl = document.getElementById('queue');
+  const emptyState = document.getElementById('emptyState');
+  const nowPlaying = document.getElementById('nowPlaying');
+  const countEl = document.getElementById('count');
+  const seek = document.getElementById('seek');
+  const curTime = document.getElementById('curTime');
+  const durTime = document.getElementById('durTime');
+  const playBtn = document.getElementById('playBtn');
+  const playIcon = document.getElementById('playIcon');
+  const vol = document.getElementById('vol');
+
+  const PLAY = 'M8 5v14l11-7z';
+  const PAUSE = 'M6 5h4v14H6zm8 0h4v14h-4z';
+
+  let tracks = [];      // { name, url, dur }
+  let current = -1;
+  let shuffle = false;
+  let repeat = false;
+  let seeking = false;
+
+  function fmt(s) {
+    if (!isFinite(s) || s < 0) return '0:00';
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60).toString().padStart(2, '0');
+    return m + ':' + sec;
+  }
+
+  function addFiles(fileList) {
+    const files = Array.from(fileList).filter(f =>
+      f.type.startsWith('audio/') || /\.(mp4|m4a|mp3|aac|ogg|wav|flac|opus)$/i.test(f.name)
+    );
+    files.forEach(f => {
+      const url = URL.createObjectURL(f);
+      const track = { name: f.name.replace(/\.[^.]+$/, ''), url, dur: null };
+      tracks.push(track);
+      // probe duration quietly
+      const probe = new Audio();
+      probe.preload = 'metadata';
+      probe.src = url;
+      probe.onloadedmetadata = () => {
+        track.dur = probe.duration;
+        render();
+      };
+    });
+    render();
+    if (current === -1 && tracks.length) { load(0, false); }
+  }
+
+  function render() {
+    countEl.textContent = '(' + tracks.length + ')';
+    emptyState.style.display = tracks.length ? 'none' : '';
+    queueEl.innerHTML = '';
+    tracks.forEach((t, i) => {
+      const li = document.createElement('li');
+      if (i === current) li.className = 'active';
+      li.innerHTML =
+        '<span class="idx mono">' + (i + 1) + '</span>' +
+        '<div class="meta"><div class="name"></div></div>' +
+        '<span class="dur mono">' + (t.dur != null ? fmt(t.dur) : '—:—') + '</span>' +
+        '<button class="remove" title="Remove" aria-label="Remove">\u00d7</button>';
+      li.querySelector('.name').textContent = t.name;
+      li.addEventListener('click', () => load(i, true));
+      li.querySelector('.remove').addEventListener('click', (e) => {
+        e.stopPropagation();
+        removeTrack(i);
+      });
+      queueEl.appendChild(li);
+    });
+  }
+
+  function load(i, autoplay) {
+    if (i < 0 || i >= tracks.length) return;
+    current = i;
+    audio.src = tracks[i].url;
+    nowPlaying.textContent = tracks[i].name;
+    nowPlaying.classList.remove('empty');
+    render();
+    if (autoplay) audio.play();
+  }
+
+  function removeTrack(i) {
+    URL.revokeObjectURL(tracks[i].url);
+    const wasCurrent = i === current;
+    tracks.splice(i, 1);
+    if (i < current) current--;
+    else if (wasCurrent) {
+      audio.pause();
+      if (tracks.length) load(Math.min(current, tracks.length - 1), false);
+      else { current = -1; audio.removeAttribute('src'); nowPlaying.textContent = 'Nothing queued yet'; nowPlaying.classList.add('empty'); deck.classList.remove('playing'); }
+    }
+    render();
+  }
+
+  function nextIndex() {
+    if (!tracks.length) return -1;
+    if (shuffle) {
+      if (tracks.length === 1) return 0;
+      let n; do { n = Math.floor(Math.random() * tracks.length); } while (n === current);
+      return n;
+    }
+    return current + 1 < tracks.length ? current + 1 : (repeat ? 0 : -1);
+  }
+
+  function playNext() {
+    const n = nextIndex();
+    if (n === -1) { audio.pause(); return; }
+    load(n, true);
+  }
+
+  function playPrev() {
+    if (audio.currentTime > 3) { audio.currentTime = 0; return; }
+    const p = current - 1 >= 0 ? current - 1 : (repeat ? tracks.length - 1 : 0);
+    load(p, true);
+  }
+
+  // Controls
+  playBtn.addEventListener('click', () => {
+    if (current === -1 && tracks.length) return load(0, true);
+    if (audio.paused) audio.play(); else audio.pause();
+  });
+  document.getElementById('nextBtn').addEventListener('click', playNext);
+  document.getElementById('prevBtn').addEventListener('click', playPrev);
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    tracks.forEach(t => URL.revokeObjectURL(t.url));
+    tracks = []; current = -1; audio.pause(); audio.removeAttribute('src');
+    nowPlaying.textContent = 'Nothing queued yet'; nowPlaying.classList.add('empty');
+    deck.classList.remove('playing');
+    render();
+  });
+
+  const shuffleBtn = document.getElementById('shuffleBtn');
+  const repeatBtn = document.getElementById('repeatBtn');
+  shuffleBtn.addEventListener('click', () => { shuffle = !shuffle; shuffleBtn.classList.toggle('on', shuffle); });
+  repeatBtn.addEventListener('click', () => { repeat = !repeat; repeatBtn.classList.toggle('on', repeat); });
+
+  // Audio events
+  audio.addEventListener('play', () => { playIcon.setAttribute('d', PAUSE); deck.classList.add('playing'); });
+  audio.addEventListener('pause', () => { playIcon.setAttribute('d', PLAY); deck.classList.remove('playing'); });
+  audio.addEventListener('ended', playNext);
+  audio.addEventListener('loadedmetadata', () => { durTime.textContent = fmt(audio.duration); });
+  audio.addEventListener('timeupdate', () => {
+    if (seeking) return;
+    curTime.textContent = fmt(audio.currentTime);
+    seek.value = audio.duration ? (audio.currentTime / audio.duration) * 1000 : 0;
+  });
+
+  seek.addEventListener('input', () => { seeking = true; curTime.textContent = fmt((seek.value / 1000) * (audio.duration || 0)); });
+  seek.addEventListener('change', () => { if (audio.duration) audio.currentTime = (seek.value / 1000) * audio.duration; seeking = false; });
+
+  vol.addEventListener('input', () => { audio.volume = vol.value; });
+
+  // File input + drag/drop
+  document.getElementById('fileInput').addEventListener('change', (e) => addFiles(e.target.files));
+  ['dragenter', 'dragover'].forEach(ev => deck.addEventListener(ev, (e) => { e.preventDefault(); deck.classList.add('dragover'); }));
+  ['dragleave', 'drop'].forEach(ev => deck.addEventListener(ev, (e) => { e.preventDefault(); if (ev === 'drop' || e.target === deck) deck.classList.remove('dragover'); }));
+  deck.addEventListener('drop', (e) => { if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
+
+  // Keyboard: space to play/pause
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
+      e.preventDefault(); playBtn.click();
+    }
+  });
+
+  // ---- Skins ----
+  const SKINS = [
+    { id: 'nightdeck',  name: 'Nightdeck',  bg: '#0d0a1a', accent: '#f5b452' },
+    { id: 'vaporwave',  name: 'Vaporwave',  bg: '#1a0b2e', accent: '#ff5fd2' },
+    { id: 'terminal',   name: 'Terminal',   bg: '#050a05', accent: '#39ff5c' },
+    { id: 'paper',      name: 'Paper',      bg: '#efe9dd', accent: '#c65a2e' },
+    { id: 'ocean',      name: 'Ocean',      bg: '#071a24', accent: '#34d3e0' },
+    { id: 'sunset',     name: 'Sunset',     bg: '#2a0f1e', accent: '#ff7a4d' },
+    { id: 'mono',       name: 'Mono',       bg: '#101010', accent: '#ffffff' },
+    { id: 'bubblegum',  name: 'Bubblegum',  bg: '#ffe4f0', accent: '#ff4d94' },
+    { id: 'crimson',    name: 'Crimson',    bg: '#16090a', accent: '#ff4438' },
+    { id: 'forest',     name: 'Forest',     bg: '#0a1a10', accent: '#7dd957' },
+  ];
+
+  const tray = document.getElementById('skinsTray');
+  const paletteBtn = document.getElementById('paletteBtn');
+  let activeSkin = 'nightdeck';
+
+  SKINS.forEach(s => {
+    const b = document.createElement('button');
+    b.className = 'swatch' + (s.id === activeSkin ? ' active' : '');
+    b.setAttribute('role', 'option');
+    b.dataset.skin = s.id;
+    b.style.background = s.bg;
+    b.style.color = s.accent;
+    b.innerHTML = '<span class="dot" style="background:' + s.accent + '"></span>' +
+                  '<span class="sw-name" style="color:' + s.accent + '">' + s.name + '</span>';
+    b.addEventListener('click', () => applySkin(s.id));
+    tray.appendChild(b);
+  });
+
+  function applySkin(id) {
+    activeSkin = id;
+    document.body.setAttribute('data-skin', id);
+    tray.querySelectorAll('.swatch').forEach(el =>
+      el.classList.toggle('active', el.dataset.skin === id));
+  }
+
+  paletteBtn.addEventListener('click', () => {
+    const open = tray.classList.toggle('open');
+    paletteBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+
+  document.body.setAttribute('data-skin', activeSkin);
+})();
+</script>
+</body>
+</html>
