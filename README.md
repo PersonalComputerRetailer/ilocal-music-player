@@ -3,6 +3,8 @@
 A self-contained HTML file that lets you play your own music right in the browser.
 **No internet. No installation. No dependencies. Just the magic of JavaScript.**
 
+![iLMP playing a queue in the default Nightdeck skin](screenshots/UI.png)
+
 ## Introduction
 
 iLMP is a single `.html` file. Open it in any modern browser, drop in your music, and play. Your files never leave your device — the browser reads them straight off your disk, so nothing is uploaded and nothing is stored after you close the tab.
