@@ -86,6 +86,47 @@
     --ink: #0a2410; --radius: 12px;
   }
 
+  /* ---- EVA Unit-00 (Rei — blue / white) ---- */
+  [data-skin="eva00"] {
+    --bg: #081226; --bg-glow: #16305e;
+    --panel: #0e1c38; --panel-2: #132548; --line: #223b66;
+    --text: #e8f1ff; --muted: #7d94bd;
+    --amber: #5cb8ff; --amber-dim: #2f6ea6; --glow: rgba(92,184,255,0.38);
+    --ink: #071a30; --radius: 12px;
+  }
+  /* ---- EVA Unit-01 (Shinji — purple / neon green) ---- */
+  [data-skin="eva01"] {
+    --bg: #170d2b; --bg-glow: #33205e;
+    --panel: #221440; --panel-2: #2b1a50; --line: #3d2a6b;
+    --text: #eee8fb; --muted: #9a8cc0;
+    --amber: #61ff7e; --amber-dim: #2f9c48; --glow: rgba(97,255,126,0.38);
+    --ink: #0b2a14; --radius: 10px;
+  }
+  /* ---- EVA Unit-02 (Asuka — red / orange) ---- */
+  [data-skin="eva02"] {
+    --bg: #1f0806; --bg-glow: #521810;
+    --panel: #331009; --panel-2: #42150c; --line: #5e2314;
+    --text: #ffeee4; --muted: #c08e7a;
+    --amber: #ff8c1a; --amber-dim: #a8570e; --glow: rgba(255,140,26,0.40);
+    --ink: #331303; --radius: 10px;
+  }
+  /* ---- EVA Unit-08 (Mari — pink / green) ---- */
+  [data-skin="eva08"] {
+    --bg: #240a1c; --bg-glow: #571c44;
+    --panel: #38102b; --panel-2: #471637; --line: #63234e;
+    --text: #ffe8f4; --muted: #c288a9;
+    --amber: #ff5fa8; --amber-dim: #a83a6e; --glow: rgba(255,95,168,0.38);
+    --ink: #33071e; --radius: 14px;
+  }
+  /* ---- EVA Unit-13 (dark violet / lime) ---- */
+  [data-skin="eva13"] {
+    --bg: #0d0b14; --bg-glow: #262138;
+    --panel: #16121f; --panel-2: #1d1829; --line: #2e2740;
+    --text: #ebe8f2; --muted: #837b9a;
+    --amber: #b7ff3c; --amber-dim: #6f9c24; --glow: rgba(183,255,60,0.35);
+    --ink: #1f2a06; --radius: 8px;
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
@@ -700,6 +741,11 @@ function moveTrack(from, to) {
     { id: 'bubblegum',  name: 'Bubblegum',  bg: '#ffe4f0', accent: '#ff4d94' },
     { id: 'crimson',    name: 'Crimson',    bg: '#16090a', accent: '#ff4438' },
     { id: 'forest',     name: 'Forest',     bg: '#0a1a10', accent: '#7dd957' },
+    { id: 'eva00',      name: 'EVA-00',     bg: '#081226', accent: '#5cb8ff' },
+    { id: 'eva01',      name: 'EVA-01',     bg: '#170d2b', accent: '#61ff7e' },
+    { id: 'eva02',      name: 'EVA-02',     bg: '#1f0806', accent: '#ff8c1a' },
+    { id: 'eva08',      name: 'EVA-08',     bg: '#240a1c', accent: '#ff5fa8' },
+    { id: 'eva13',      name: 'EVA-13',     bg: '#0d0b14', accent: '#b7ff3c' },
   ];
 
   const tray = document.getElementById('skinsTray');
