@@ -1,5 +1,8 @@
 # iLocal Music Player (iLMP) 🎵
 
+[![Release](https://img.shields.io/github/v/release/PersonalComputerRetailer/ilocal-music-player?sort=semver)](https://github.com/PersonalComputerRetailer/ilocal-music-player/releases)
+[![License](https://img.shields.io/github/license/PersonalComputerRetailer/ilocal-music-player)](LICENSE)
+
 A self-contained HTML file that lets you play your own music right in the browser.
 **No internet. No installation. No dependencies. Just the magic of JavaScript.**
 
@@ -24,7 +27,7 @@ That's the whole thing. One file. No build step, no server
 
 ## How to use
 
-1. Download `local-music-player.html`.
+1. Download `iLMP.html`.
 2. Double-click it (or open it in your browser).
 3. Click **+ Add music files**, or drag files onto the player.
 4. Hit play. Use the palette button in the top-right corner to change the look.
