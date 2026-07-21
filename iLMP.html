@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<!-- iLocal Music Player (iLMP) — v2.0 -->
+<!-- iLocal Music Player (iLMP) — v2.1 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="version" content="2.0">
-<title>Nightdeck — Local Music Player</title>
+<meta name="version" content="2.1">
+<title>iLMP v2.1</title>
 <style>
   /* ---- Nightdeck (default) ---- */
   :root, [data-skin="nightdeck"] {
@@ -139,8 +139,8 @@
     color: var(--text);
     min-height: 100vh;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: safe center;
+    justify-content: safe center;
     padding: 24px;
     transition: background 0.4s ease, color 0.4s ease;
   }
@@ -149,7 +149,9 @@
 
   .deck {
     width: 100%;
+    min-width: 360px;
     max-width: 560px;
+    min-height: 230px;
     background: linear-gradient(180deg, var(--panel-2), var(--panel));
     border: 1px solid var(--line);
     border-radius: var(--radius);
@@ -371,6 +373,7 @@
     background: var(--panel);
     border: 1px solid var(--line);
     color: var(--text);
+    flex: none;
     width: 44px; height: 44px;
     border-radius: 50%;
     display: grid;
@@ -415,6 +418,21 @@
     width: 120px;
   }
   .vol svg { width: 16px; height: 16px; fill: currentColor; flex: none; }
+
+  /* Compact / mini-player layout for narrow windows (fits Chrome's ~400px min) */
+  @media (max-width: 560px) {
+    body { padding: 10px; }
+    header { padding: 14px 16px 12px; gap: 12px; }
+    .progress-wrap { padding: 12px 16px 4px; }
+    .controls { gap: 8px; padding: 8px 16px 14px; }
+    button.ctl { width: 40px; height: 40px; }
+    button.ctl svg { width: 16px; height: 16px; }
+    button.ctl.play { width: 50px; height: 50px; }
+    .vol { width: auto; gap: 6px; }
+    .vol input[type="range"] { width: 64px; }
+    .queue-head { padding: 12px 16px; }
+    .progress-wrap, .add-row, .empty-state { padding-left: 16px; padding-right: 16px; }
+  }
 
   /* Queue */
   .queue-head {
@@ -609,7 +627,7 @@
       <input type="file" id="fileInput" accept="audio/*,.mp4,.m4a" multiple>
     </div>
 
-    <div class="app-version mono">iLMP v2.0</div>
+    <div class="app-version mono">iLMP v2.1</div>
   </div>
 
   <audio id="audio"></audio>
